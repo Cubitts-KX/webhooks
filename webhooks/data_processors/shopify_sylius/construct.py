@@ -51,6 +51,7 @@ class ShopifyToSyliusProcessor(Construct):
             code=_lambda.Code.from_asset(
                 "webhooks/data_processors/shopify_sylius/lambdas"
             ),
+            concurrency=10, # So we don't overload Sylius when we have a lot of orders
         )
         bucket.grant_read(lambda_fn)
         queue.grant_consume_messages(lambda_fn)

@@ -6,7 +6,6 @@ s3_client = boto3.client("s3")
 
 
 def handler(event, context):
-    print(event)
     for record in event["Records"]:
         message_body = json.loads(record["body"])
 
