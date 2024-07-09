@@ -34,6 +34,7 @@ class ShopifyToSyliusProcessor(Construct):
         super().__init__(scope, id, **kwargs)
 
         name = route_to_name(options.prefix)
+        clean_prefix = options.prefix.strip("/")
 
         rule = aws_events.Rule(
             self,
@@ -43,7 +44,7 @@ class ShopifyToSyliusProcessor(Construct):
                 detail_type=["Object Created"],
                 detail={
                     "bucket": {"name": [options.bucket.bucket_name]},
-                    "object": {"key": [{"prefix": options.prefix}]},
+                    "object": {"key": [{"prefix": clean_prefix}]},
                 },
             ),
         )
@@ -74,7 +75,7 @@ class ShopifyToSyliusProcessor(Construct):
             ),
             environment={
                 "CUBITTS_ENV": cubitts_env,
-                "PREFIX": options.prefix,
+                "PREFIX": clean_prefix,
             },
         )
         options.bucket.grant_read(lambda_fn)

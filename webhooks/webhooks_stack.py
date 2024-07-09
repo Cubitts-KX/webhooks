@@ -3,12 +3,10 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-
-from webhooks.inbound_data.construct import InboundData
-from webhooks.data_processors.shopify_sylius.construct import (
-    ShopifyToSyliusProcessor,
-    ShopifyToSyliusProcessorOptions,
+from webhooks.data_processors.shopify_sylius.constructs.processors import (
+    ShopifyToSyliusProcessors,
 )
+from webhooks.inbound_data.constructs.inbound_data import InboundData
 
 
 class WebhooksStack(Stack):
@@ -19,24 +17,10 @@ class WebhooksStack(Stack):
 
         inbound_data = InboundData(self, "InboundData", cubitts_env=cubitts_env)
 
-        ShopifyToSyliusProcessor(
+        # Data Processors
+        ShopifyToSyliusProcessors(
             self,
-            "ShopifyOrderCreateToSyliusProcessor",
-            options=ShopifyToSyliusProcessorOptions(
-                prefix="shopify/orders/create",
-                handler="send_to_sylius.order_create",
-                bucket=inbound_data.bucket,
-            ),
-            cubitts_env=cubitts_env,
-        )
-
-        ShopifyToSyliusProcessor(
-            self,
-            "ShopifyOrderUpdateToSyliusProcessor",
-            options=ShopifyToSyliusProcessorOptions(
-                prefix="shopify/orders/update",
-                handler="send_to_sylius.order_create",
-                bucket=inbound_data.bucket,
-            ),
+            "ShopifyToSyliusProcessors",
+            bucket=inbound_data.bucket,
             cubitts_env=cubitts_env,
         )

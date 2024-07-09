@@ -12,7 +12,6 @@ Why:
 
 3. We can route processing beyond Sylius. Multiple subscribers can act on the message bus; allowing us to retain the existing Sylius behaviour while adding non-Sylius destinations for the data.
 
-
 ### How it works
 
 We will run through the Shopify web hook as an example, but future additions should use a similar pattern
@@ -38,7 +37,6 @@ We will run through the Shopify web hook as an example, but future additions sho
 7. The data processing lambda parses the event to get the bucket and object details and downloads the stored JSON from the bucket. Then it sends that data to the legacy webhook endpoint in Sylius. If there are any problems, or the Sylius endpoint returns an unsuccessful response we raise an exception.
 
 8. Any exceptions will result in the lambda retrying 3 times before it lands in the dead letter queue. After investigating and fixing the issue, the messages in the DLQ can be sent back to the original queue for reprocessing.
-
 
 ### Retrying
 
