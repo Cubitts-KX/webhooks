@@ -1,58 +1,49 @@
+# Webhooks
 
-# Welcome to your CDK Python project!
+This serves as a central place to receive webhooks, store the data and process the data.
 
-This is a blank project for CDK development with Python.
+The pattern here prioritises storing the data in the webhook and returning a success to the calling third party. Processing that data is then done asyncronously.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Why:
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+1. We can fix bugs and re-process data on our own schedule without exposing failures to the third party. Shopify's retry logic is to try a few times and then disable the webhook; not sending messages that would otherwise be processed successfully.
 
-To manually create a virtualenv on MacOS and Linux:
+2. We can control the load using a queue. When we launch new popular products we receive a lot of webhooks. This has taken Sylius down. Instead, the queue length will grow and we can deal with that how we want.
 
-```
-$ python3 -m venv .venv
-```
+3. We can route processing beyond Sylius. Multiple subscribers can act on the message bus; allowing us to retain the existing Sylius behaviour while adding non-Sylius destinations for the data.
 
-After the init process completes and the virtualenv is created, you can use the following
-step to activate your virtualenv.
 
-```
-$ source .venv/bin/activate
-```
+### How it works
 
-If you are a Windows platform, you would activate the virtualenv like this:
+We will run through the Shopify web hook as an example, but future additions should use a similar pattern
 
-```
-% .venv\Scripts\activate.bat
-```
+![Architecture Diagram](https://github.com/Cubitts-Kx/cubitts-sylius/blob/main/aws_diagram.svg?raw=true)
 
-Once the virtualenv is activated, you can install the required dependencies.
+##### Storing the data sent by the third party
 
-```
-$ pip install -r requirements.txt
-```
+1. We have an API route for /service/resource/action; in the case of Shopify - /shopify/order/create and configure the service to post data there.
 
-At this point you can now synthesize the CloudFormation template for this code.
+2. We have a data storing lambda which stores the data in S3. This also creates the key for the data, so we store the data using the Shopify Order ID at s3://bucket-name/shopify/order/create/shopify_order_id.json making it easier for us to find an order's data in the bucket.
 
-```
-$ cdk synth
-```
+3. The bucket is configured to emit an event to the default eventbridge bus on object creation.
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
+4. We then return a 201 success code with no body to the calling service.
 
-## Useful commands
+##### Processing the data
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+5. We have an Eventbridge rule that filters for events in the shopify/orders/create path within the bucket and sends that event to a queue
 
-Enjoy!
+6. The queue stores filtered events and allows a lambda to consume from it. It is also configured to use a dead letter queue after retrying.
+
+7. The data processing lambda parses the event to get the bucket and object details and downloads the stored JSON from the bucket. Then it sends that data to the legacy webhook endpoint in Sylius. If there are any problems, or the Sylius endpoint returns an unsuccessful response we raise an exception.
+
+8. Any exceptions will result in the lambda retrying 3 times before it lands in the dead letter queue. After investigating and fixing the issue, the messages in the DLQ can be sent back to the original queue for reprocessing.
+
+
+### Retrying
+
+Messages will be sent to the DLQ after being retried 3 times.
+
+Message will remain in the DLQ for up to 14 days.
+
+Log into the AWS console, navigate to the DLQ and press the "redrive" button to send the messages back to the original queue for them to be reprocessed.
