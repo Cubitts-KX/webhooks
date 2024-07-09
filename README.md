@@ -17,7 +17,7 @@ Why:
 
 We will run through the Shopify web hook as an example, but future additions should use a similar pattern
 
-![Architecture Diagram](https://github.com/Cubitts-Kx/cubitts-sylius/blob/main/aws_diagram.svg?raw=true)
+![Architecture Diagram](https://github.com/Cubitts-KX/webhooks/blob/main/aws_diagram.svg?raw=true)
 
 ##### Storing the data sent by the third party
 
