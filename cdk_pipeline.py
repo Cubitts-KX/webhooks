@@ -11,7 +11,7 @@ class Production(cdk.Stage):
 
         WebhooksStack(
             self,
-            "WebhooksProduction",
+            "Webhooks",
             cubitts_env="production",
             env=cdk.Environment(
                 account="658056508030",
@@ -26,7 +26,7 @@ class Staging(cdk.Stage):
 
         WebhooksStack(
             self,
-            "WebhooksStaging",
+            "Webhooks",
             cubitts_env="staging",
             env=cdk.Environment(
                 account="658056508030",
@@ -66,15 +66,3 @@ class PipelineStack(cdk.Stack):
 
         pipeline.add_stage(Production(self, "Production"))
         pipeline.add_stage(Staging(self, "Staging"))
-
-
-"""
-aws codestar-connections create-connection --provider-type GitHub --connection-name CubittsGitHub
-
->>> arn:aws:codestar-connections:eu-west-1:658056508030:connection/3a8aca7a-ed7c-414b-9e21-3a7b22e4935d
-
-Go to https://eu-west-1.console.aws.amazon.com/codesuite/settings/connections?region=eu-west-1&connections-meta=eyJmIjp7InRleHQiOiIifSwicyI6e30sIm4iOjIwLCJpIjowfQ
-
-https://docs.aws.amazon.com/dtconsole/latest/userguide/connections-update.html
-
-"""

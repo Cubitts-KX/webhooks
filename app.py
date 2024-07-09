@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import aws_cdk as cdk
-from deployment.pipeline import PipelineStack
+
+from cdk_pipeline import PipelineStack
 
 app = cdk.App()
 PipelineStack(
