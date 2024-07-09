@@ -11,7 +11,7 @@ from constructs import Construct
 
 
 class ShopifyToSyliusProcessor(Construct):
-    def __init__(self, scope: Construct, id: str, bucket: s3.Bucket, **kwargs) -> None:
+    def __init__(self, scope: Construct, id: str, bucket: s3.Bucket, cubitts_env: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         rule = events.Rule(
@@ -51,6 +51,7 @@ class ShopifyToSyliusProcessor(Construct):
             code=_lambda.Code.from_asset(
                 "webhooks/data_processors/shopify_sylius/lambdas"
             ),
+            environment={"CUBITTS_ENV": cubitts_env},
             concurrency=10, # So we don't overload Sylius when we have a lot of orders
         )
         bucket.grant_read(lambda_fn)

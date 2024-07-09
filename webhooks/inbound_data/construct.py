@@ -9,7 +9,7 @@ from constructs import Construct
 
 
 class InboundData(Construct):
-    def __init__(self, scope: Construct, id: str):
+    def __init__(self, scope: Construct, id: str, cubitts_env: str, **kwargs) -> None:
         super().__init__(scope, id)
 
         api = apigw.HttpApi(
@@ -33,7 +33,10 @@ class InboundData(Construct):
             code=lambda_.Code.from_asset(
                 "webhooks/inbound_data/lambdas/shopify_orders_create"
             ),
-            environment={"BUCKET_NAME": bucket.bucket_name},
+            environment={
+                "BUCKET_NAME": bucket.bucket_name,
+                "CUBITTS_ENV": cubitts_env,
+            },
         )
         bucket.grant_write(shopify_order_create_lambda_fn)
 
