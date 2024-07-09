@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from aws_cdk import (
     Duration,
     aws_lambda as _lambda,
@@ -10,32 +12,49 @@ from aws_cdk import (
 from constructs import Construct
 
 
+@dataclass
+class ShopifyToSyliusProcessorOptions:
+    bucket: s3.Bucket
+    prefix: str
+    handler: str
+    concurrency: int = 10
+
+
 class ShopifyToSyliusProcessor(Construct):
-    def __init__(self, scope: Construct, id: str, bucket: s3.Bucket, cubitts_env: str, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        id: str,
+        options: ShopifyToSyliusProcessorOptions,
+        cubitts_env: str,
+        **kwargs,
+    ) -> None:
         super().__init__(scope, id, **kwargs)
+
+        name = construct_name(options.prefix)
 
         rule = events.Rule(
             self,
-            "ShopifyOrderCreateRule",
+            f"{name}Rule",
             event_pattern=events.EventPattern(
                 source=["aws.s3"],
                 detail_type=["Object Created"],
                 detail={
-                    "bucket": {"name": [bucket.bucket_name]},
-                    "object": {"key": [{"prefix": "shopify/orders/create"}]},
+                    "bucket": {"name": [options.bucket.bucket_name]},
+                    "object": {"key": [{"prefix": options.prefix}]},
                 },
             ),
         )
 
         queue = sqs.Queue(
             self,
-            "ShopifyToSyliusQueue",
+            f"{name}Queue",
             visibility_timeout=Duration.seconds(300),
             dead_letter_queue=sqs.DeadLetterQueue(
                 max_receive_count=3,
                 queue=sqs.Queue(
                     self,
-                    "ShopifyToSyliusDLQ",
+                    f"{name}DLQ",
                     visibility_timeout=Duration.seconds(300),
                 ),
             ),
@@ -44,16 +63,25 @@ class ShopifyToSyliusProcessor(Construct):
 
         lambda_fn = _lambda.Function(
             self,
-            "ShopifyToSyliusLambda",
+            f"{name}Lambda",
             runtime=_lambda.Runtime.PYTHON_3_12,
-            handler="send_to_sylius.handler",
+            handler=options.handler,
             timeout=Duration.seconds(60),
             code=_lambda.Code.from_asset(
                 "webhooks/data_processors/shopify_sylius/lambdas"
             ),
-            environment={"CUBITTS_ENV": cubitts_env},
-            concurrency=10, # So we don't overload Sylius when we have a lot of orders
+            environment={
+                "CUBITTS_ENV": cubitts_env,
+                "PREFIX": options.prefix,
+            },
         )
-        bucket.grant_read(lambda_fn)
+        options.bucket.grant_read(lambda_fn)
         queue.grant_consume_messages(lambda_fn)
-        lambda_fn.add_event_source(lambda_event_sources.SqsEventSource(queue))
+        lambda_fn.add_event_source(
+            lambda_event_sources.SqsEventSource(queue),
+        )
+
+
+def construct_name(prefix):
+    service, resource, action = prefix.split("/")
+    return f"{service.capitalize()}ToSylius{resource.capitalize()}{action.capitalize()}"
