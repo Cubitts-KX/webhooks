@@ -59,6 +59,7 @@ class ShopifyToSyliusProcessor(Construct):
                     self,
                     f"{name}DLQ",
                     visibility_timeout=Duration.seconds(300),
+                    retention_period=Duration.days(14),
                 ),
             ),
         )
