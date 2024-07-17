@@ -19,7 +19,7 @@ class ShopifyToSyliusProcessorOptions:
     bucket: aws_s3.Bucket
     prefix: str
     handler: str
-    concurrency: int = 5
+    concurrency: int = 2
 
 
 class ShopifyToSyliusProcessor(Construct):
