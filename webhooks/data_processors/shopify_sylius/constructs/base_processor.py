@@ -70,7 +70,7 @@ class ShopifyToSyliusProcessor(Construct):
             f"{name}Lambda",
             runtime=aws_lambda.Runtime.PYTHON_3_12,
             handler=options.handler,
-            timeout=Duration.seconds(60),
+            timeout=Duration.seconds(120),
             reserved_concurrent_executions=options.concurrency,
             code=aws_lambda.Code.from_asset(
                 "webhooks/data_processors/shopify_sylius/lambdas"
