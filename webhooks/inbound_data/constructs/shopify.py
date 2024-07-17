@@ -37,8 +37,8 @@ class ShopifyInbound(Construct):
         options.bucket.grant_write(shopify_inbound_fn)
 
         shopify_webhook_routes = [
-            "/shopify/orders/create",
-            "/shopify/orders/update",
+            "/shopify/order/create",
+            "/shopify/order/update",
             "/shopify/product/update",
             "/shopify/customer/create",
             "/shopify/customer/update",

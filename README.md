@@ -30,7 +30,7 @@ We will run through the Shopify web hook as an example, but future additions sho
 
 ##### Processing the data
 
-5. We have an Eventbridge rule that filters for events in the shopify/orders/create path within the bucket and sends that event to a queue
+5. We have an Eventbridge rule that filters for events in the shopify/order/create path within the bucket and sends that event to a queue
 
 6. The queue stores filtered events and allows a lambda to consume from it. It is also configured to use a dead letter queue after retrying.
 

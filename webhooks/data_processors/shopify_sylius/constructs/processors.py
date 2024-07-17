@@ -20,8 +20,8 @@ class ShopifyToSyliusProcessors(Construct):
         super().__init__(scope, id, **kwargs)
 
         shopify_prefixes = [
-            "shopify/orders/create",
-            "shopify/orders/update",
+            "shopify/order/create",
+            "shopify/order/update",
             "shopify/product/update",
             "shopify/customer/create",
             "shopify/customer/update",
