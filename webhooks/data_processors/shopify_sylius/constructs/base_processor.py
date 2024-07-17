@@ -83,5 +83,5 @@ class ShopifyToSyliusProcessor(Construct):
         options.bucket.grant_read(lambda_fn)
         queue.grant_consume_messages(lambda_fn)
         lambda_fn.add_event_source(
-            aws_lambda_event_sources.SqsEventSource(queue),
+            aws_lambda_event_sources.SqsEventSource(queue, batch_size=1),
         )
