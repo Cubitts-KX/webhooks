@@ -27,8 +27,12 @@ def handler(event, context):
             scan_id = scan["id"]
 
             scan_files = scan["reconstruction3D"]
-            copy_to_s3(scan_files["objUrl"], scan_bucket_name, f"{scan_id}/head3d.obj")
-            copy_to_s3(scan_files["pngUrl"], scan_bucket_name, f"{scan_id}/texture.png")
+            for ext in ["obj", "png", "mtl"]:
+                copy_to_s3(
+                    scan_files[f"{ext}Url"],
+                    scan_bucket_name,
+                    f"{scan_id}/head3d.{['obj', 'png', 'mtl']}",
+                )
 
     return {
         "statusCode": 200,
