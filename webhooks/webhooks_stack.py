@@ -39,4 +39,5 @@ class WebhooksStack(Stack):
                 prefix="myfit/scan/finished",
                 handler="copy_to_s3.handler",
             ),
+            cubitts_env=cubitts_env,
         )
