@@ -31,7 +31,7 @@ def handler(event, context):
                 copy_to_s3(
                     scan_files[f"{ext}Url"],
                     scan_bucket_name,
-                    f"{scan_id}/head3d.{['obj', 'png', 'mtl']}",
+                    f"myfit/{scan_id}/head3d.{['obj', 'png', 'mtl']}",
                 )
 
     return {
