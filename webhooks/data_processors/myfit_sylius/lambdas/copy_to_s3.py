@@ -34,6 +34,11 @@ def handler(event, context):
                     f"myfit/{scan_id}/head3d.{['obj', 'png', 'mtl']}",
                 )
 
+        url = build_url()
+        req = urllib.request.Request(url)
+        req.add_header("Content-Type", "application/json")
+        response = urllib.request.urlopen(req, json.dumps(body).encode("utf-8"))
+
     return {
         "statusCode": 200,
         "body": f"Data processed successfully for {bucket_name}/{s3_key}",
@@ -43,3 +48,12 @@ def handler(event, context):
 def copy_to_s3(url, bucket_name, key_name):
     response = urllib.request.urlopen(url)
     s3_client.put_object(Body=response, Bucket=bucket_name, Key=key_name)
+
+
+def build_url():
+    cubitts_env = os.environ["CUBITTS_ENV"]
+    subdomain = "www" if cubitts_env == "production" else "staging"
+    base_url = f"https://{subdomain}.cubittsadmin.com"
+
+    path = "/api/myfit/scan"
+    return f"{base_url}{path}"

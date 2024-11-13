@@ -34,8 +34,6 @@ class MyFitToSyliusFinishedScanProcessor(Construct):
         super().__init__(scope, id, **kwargs)
 
         # Bucket to store the obj, png and mtl files from the scan
-        # Or we should be using the existing heads.heru-dev and heads.heru buckets?
-        # But those are in a different account so need cross account access arranged
         scan_bucket = aws_s3.Bucket(
             self,
             "MyFitScanBucket",
@@ -86,7 +84,6 @@ class MyFitToSyliusFinishedScanProcessor(Construct):
             ),
             environment={
                 "CUBITTS_ENV": cubitts_env,
-                "PREFIX": clean_prefix,
                 "SCAN_BUCKET_NAME": scan_bucket.bucket_name,
             },
         )
