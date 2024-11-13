@@ -18,7 +18,6 @@ from webhooks.utils import route_to_name
 class MyFitToSyliusFinishedScanProcessorOptions:
     bucket: aws_s3.Bucket
     prefix: str
-    handler: str
     concurrency: int = 2
 
 
@@ -76,7 +75,7 @@ class MyFitToSyliusFinishedScanProcessor(Construct):
             self,
             f"{name}Lambda",
             runtime=aws_lambda.Runtime.PYTHON_3_12,
-            handler=options.handler,
+            handler="copy_to_s3_add_to_sylius.handler",
             timeout=Duration.seconds(120),
             reserved_concurrent_executions=options.concurrency,
             code=aws_lambda.Code.from_asset(
