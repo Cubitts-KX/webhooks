@@ -38,6 +38,15 @@ class MyFitToSyliusFinishedScanProcessor(Construct):
             "MyFitScanBucket",
             versioned=True,
         )
+        scan_bucket.add_cors_rule(
+            allowed_methods=[
+                aws_s3.HttpMethods.GET,
+                aws_s3.HttpMethods.POST,
+            ],
+            allowed_origins=["*"],
+            allowed_headers=["*"],
+            exposed_headers=[],
+        )
 
         name = route_to_name(options.prefix)
         clean_prefix = options.prefix.strip("/")
