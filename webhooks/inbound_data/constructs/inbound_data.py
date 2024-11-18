@@ -1,6 +1,10 @@
 from aws_cdk import aws_apigatewayv2, aws_s3
 from constructs import Construct
 
+from webhooks.inbound_data.constructs.myfit import (
+    MyFitInbound,
+    MyFitInboundOptions,
+)
 from webhooks.inbound_data.constructs.shopify import (
     ShopifyInbound,
     ShopifyInboundOptions,
@@ -28,6 +32,16 @@ class InboundData(Construct):
             self,
             "ShopifyInboundWebhooks",
             options=ShopifyInboundOptions(
+                bucket=bucket,
+                api=api,
+            ),
+            cubitts_env=cubitts_env,
+        )
+
+        MyFitInbound(
+            self,
+            "MyFitInboundWebhooks",
+            options=MyFitInboundOptions(
                 bucket=bucket,
                 api=api,
             ),
